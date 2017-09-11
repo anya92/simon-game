@@ -2,7 +2,7 @@
 
 Free Code Camp's Advanced Front End Project
 
-Live: https://anya92.github.io/...
+Live: https://anya92.github.io/simon-game/
 
 ## User stories:
 
