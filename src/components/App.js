@@ -4,11 +4,16 @@ import styled, { injectGlobal } from 'styled-components';
 import Controlers from './Controlers';
 import GameBoard from './GameBoard';
 
+import soundRed from '../sounds/simonSound1.mp3';
+import soundBlue from '../sounds/simonSound2.mp3';
+import soundYellow from '../sounds/simonSound3.mp3';
+import soundGreen from '../sounds/simonSound4.mp3';
+
 const audio = {
-  red: new Audio('https://s3.amazonaws.com/freecodecamp/simonSound1.mp3'),
-  blue: new Audio('https://s3.amazonaws.com/freecodecamp/simonSound2.mp3'),
-  yellow: new Audio('https://s3.amazonaws.com/freecodecamp/simonSound3.mp3'),
-  green: new Audio('https://s3.amazonaws.com/freecodecamp/simonSound4.mp3')
+  red: new Audio(soundRed),
+  blue: new Audio(soundBlue),
+  yellow: new Audio(soundYellow),
+  green: new Audio(soundGreen)
 };
 
 injectGlobal`
@@ -21,7 +26,7 @@ injectGlobal`
 
 const Title = styled.div`
   text-align: center;
-  font-size: 40px;
+  font-size: 45px;
   margin-top: 20px;
 `;
 
@@ -89,23 +94,19 @@ class App extends Component {
       i++;
       if (i >= gameMoves.length) {
         clearInterval(moves);
+      // clear playerMoves array
+        this.setState({
+          playerMoves: [],
+          yourTurn: true
+        });
       }
     }, 600);
-    // clear playerMoves array
-    this.setState({
-      playerMoves: [],
-      yourTurn: true
-    });
   }
 
   playMove = color => {
     // audio effect
     audio[color].play();
     // visual effect
-    this.visualEffect(color);
-  }
-
-  visualEffect = color => {
     let circle = document.getElementById(color);
     circle.classList.add('clicked');
     setTimeout(() => {
@@ -119,38 +120,42 @@ class App extends Component {
       playerMoves.push(color);
       this.setState({ playerMoves });
       this.checkPlayer(color);
-      this.visualEffect(color);
+      this.playMove(color);
     }
   }
 
   checkPlayer = color => {
-    let { playerMoves, gameMoves, strictMode, count, yourTurn } = this.state;
+    let { playerMoves, gameMoves, strictMode, count } = this.state;
     if (playerMoves[playerMoves.length - 1] !== gameMoves[playerMoves.length - 1]) { // wrong move
       if (strictMode) {
-        this.setState({ message: 'Spróbuj ponownie! Od początku...' });
-        this.resetGame();
+        this.renderMessage('Spróbuj ponownie! Od początku...');
+        setTimeout(() => this.resetGame(), 1000);
       } else {
+        this.renderMessage('Spróbuj ponownie!');
         this.setState({
-          yourTurn: false,
-          message: 'Spróbuj ponownie!'
+          yourTurn: false
         });
-        this.showMoves();
+        setTimeout(() => this.showMoves(), 1000);
       }
     } else { // ok
-      audio[color].play();
       if (playerMoves.length === gameMoves.length) {
-        this.setState({ message: 'Dobrze!' });
         if (count === 20) { // game is over
-          this.setState({ message: 'Wygrałeś!!!' });
+          this.renderMessage('Wygrałeś!!! Gratulacje!');
+          setTimeout(() => this.resetGame(), 1000);
         } else { // next round
+          this.renderMessage('Dobrze! Następna runda.');
           this.setState({
-            yourTurn: false,
-            message: 'Następna runda'
+            yourTurn: false
           });
-          setTimeout(() => this.generateMove(), 500);
+          setTimeout(() => this.generateMove(), 600);
         }
       }
     }
+  }
+
+  renderMessage = message => {
+    this.setState({ message });
+    setTimeout(() => this.setState({ message: '' }), 1000);
   }
 
   render() {
@@ -158,15 +163,18 @@ class App extends Component {
       <div>
         <Title>simon game</Title>
         <Game>
+          <GameBoard 
+            playerMove={this.playerMove}
+            message={this.state.message}
+            strictMode={this.state.strictMode}
+            count={this.state.count}
+          />
           <Controlers 
             gameIsPlaying={this.state.gameIsPlaying}
             strictMode={this.state.strictMode}
             startGame={this.startGame}
             setStrictMode={this.setStrictMode}
             resetGame={this.resetGame}
-          />
-          <GameBoard 
-            playerMove={this.playerMove}
           />
         </Game>
       </div>
