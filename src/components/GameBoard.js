@@ -45,14 +45,14 @@ const GameBoard = ({ playerMove }) => {
   return (
     <Circles>
       <Top>
-        <Circle id="green" />
+        <Circle id="green" onClick={() => playerMove('green')}/>
       </Top>
       <Middle>
-        <Circle id="red" />
-        <Circle id="blue" />
+        <Circle id="red" onClick={() => playerMove('red')} />
+        <Circle id="blue" onClick={() => playerMove('blue')} />
       </Middle>
       <Bottom>
-        <Circle id="yellow" />
+        <Circle id="yellow" onClick={() => playerMove('yellow')} />
       </Bottom>
     </Circles>
   );

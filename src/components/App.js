@@ -53,6 +53,25 @@ class App extends Component {
     this.generateMove();
   }
 
+  setStrictMode = () => {
+    this.setState(prevState => {
+      return {
+        strictMode: !prevState.strictMode
+      };
+    });
+  }
+
+  resetGame = () => {
+    this.setState({
+      gameIsPlaying: false,
+      yourTurn: false,
+      gameMoves: [],
+      playerMoves: [],
+      count: 0,
+      message: ''
+    });
+  }
+
   generateMove = () => {
     let { count, gameMoves } = this.state;
     count++;
@@ -80,7 +99,9 @@ class App extends Component {
   }
 
   playMove = color => {
+    // audio effect
     audio[color].play();
+    // visual effect
     this.visualEffect(color);
   }
 
@@ -92,8 +113,44 @@ class App extends Component {
     }, 200);
   }
 
-  playerMove = () => {
+  playerMove = color => {
+    let { playerMoves, yourTurn } = this.state;
+    if (yourTurn) {
+      playerMoves.push(color);
+      this.setState({ playerMoves });
+      this.checkPlayer(color);
+      this.visualEffect(color);
+    }
+  }
 
+  checkPlayer = color => {
+    let { playerMoves, gameMoves, strictMode, count, yourTurn } = this.state;
+    if (playerMoves[playerMoves.length - 1] !== gameMoves[playerMoves.length - 1]) { // wrong move
+      if (strictMode) {
+        this.setState({ message: 'Spróbuj ponownie! Od początku...' });
+        this.resetGame();
+      } else {
+        this.setState({
+          yourTurn: false,
+          message: 'Spróbuj ponownie!'
+        });
+        this.showMoves();
+      }
+    } else { // ok
+      audio[color].play();
+      if (playerMoves.length === gameMoves.length) {
+        this.setState({ message: 'Dobrze!' });
+        if (count === 20) { // game is over
+          this.setState({ message: 'Wygrałeś!!!' });
+        } else { // next round
+          this.setState({
+            yourTurn: false,
+            message: 'Następna runda'
+          });
+          setTimeout(() => this.generateMove(), 500);
+        }
+      }
+    }
   }
 
   render() {
@@ -105,6 +162,8 @@ class App extends Component {
             gameIsPlaying={this.state.gameIsPlaying}
             strictMode={this.state.strictMode}
             startGame={this.startGame}
+            setStrictMode={this.setStrictMode}
+            resetGame={this.resetGame}
           />
           <GameBoard 
             playerMove={this.playerMove}
